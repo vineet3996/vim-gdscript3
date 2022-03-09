@@ -7,7 +7,7 @@ import util
 import classes
 
 # Regex patterns for user declarations.
-_VAR_PATTERN = "\s*(?:export(?:\(.*\)\s+)?)?var\s+(\w+)"
+_VAR_PATTERN = "\s*(?:export\s+?)?\s*(?:onready\s+?)?var\s+(\w+)\s*:?\s*(\w*)?"
 _CONST_PATTERN = "\s*const\s+(\w+)\s*=\s*(.+)"
 _FUNC_PATTERN = "\s*(static\s+)?func\s+(\w+)\(((\w|,|\s)*)\):"
 _ENUM_PATTERN = "\s*enum\s+(\w+)"
@@ -46,7 +46,7 @@ def _get_decl(lnum, flags):
     if flags & VAR_DECLS:
         m = re.match(_VAR_PATTERN, line)
         if m:
-            return VarDecl(lnum, m.group(1), None)
+            return VarDecl(lnum, m.group(1), m.group(2))
 
     if flags & CONST_DECLS:
         m = re.match(_CONST_PATTERN, line)
