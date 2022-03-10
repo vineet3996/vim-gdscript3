@@ -345,6 +345,9 @@ def get_token_chain(line, line_num, start_col):
     elif not chain or chain[-1].name == "self":
         if not chain and name == "self":
             return [VariableToken(name, None)]
+        decl = find_decl(line_num, name, VAR_DECLS)
+        if decl:
+            return [VariableToken(name,decl.type)]
         decl = find_decl(line_num, name, ENUM_DECLS | CLASS_DECLS)
         if decl:
             decl_type = type(decl)
