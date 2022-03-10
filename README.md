@@ -6,7 +6,7 @@ This plugin adds syntax highlighting and completion for the most recent version 
 # Installation
 Using [vim-plug](https://github.com/junegunn/vim-plug):
 
-    Plug 'calviken/vim-gdscript3'
+    Plug 'vineet3996/vim-gdscript3'
     
 Or any other plugin manager of your choice.
 
