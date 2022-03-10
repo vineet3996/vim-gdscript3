@@ -31,7 +31,7 @@ syn keyword gdClass     int float bool
 syn match   gdClass     "\v<\u\w+>"
 syn match   gdConstant  "\v<[A-Z_]+[A-Z0-9_]*>"
 syn keyword gdClass     AABB IP JSON OS RID
-syn match   gdNode      "\v\$\a+\w*"
+syn match   gdNode      "\v\$\a+\w*(\/\w+)*"
 
 syn region  gdString      start='\v\"' end='\v\"'
 syn region  gdString      start='\v\'' end='\v\''
