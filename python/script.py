@@ -98,7 +98,7 @@ def _args_to_vars(func_decl):
             method_arg = method.args[i]
             if method_arg:
                 arg_type = method_arg.type
-        if !arg_type:
+        if arg_type==None:
             arg_type=arg.type
         vars.append(VarDecl(func_decl.line, arg.name, arg_type))
     return vars
