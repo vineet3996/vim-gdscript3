@@ -9,7 +9,7 @@ import classes
 # Regex patterns for user declarations.
 _VAR_PATTERN = "\s*(?:export\s+?)?\s*(?:onready\s+?)?var\s+(\w+)\s*:?\s*(\w*)?"
 _CONST_PATTERN = "\s*const\s+(\w+)\s*=\s*(.+)"
-_FUNC_PATTERN = "\s*(static\s+)?func\s+(\w+)\(((\w|,|\s)*)\):"
+_FUNC_PATTERN = "\s*(static\s+)?func\s+(\w+)\(((?:\s*\w+\s*(?::\w+)?\s*,?)*)\)(?:->)?(\w+)?:"
 _ENUM_PATTERN = "\s*enum\s+(\w+)"
 _ENUM_VALUES_PATTERN = "\s*enum\s+\w+\s*\{(.*)\}"
 _CLASS_PATTERN = "\s*class\s+(\w+)(?:\s+extends\s+(\w+))?"
@@ -25,7 +25,8 @@ ANY_DECLS = VAR_DECLS | CONST_DECLS | FUNC_DECLS | ENUM_DECLS | CLASS_DECLS
 # These store info about user-declared items in the script.
 VarDecl = namedtuple("VarDecl", "line, name, type")
 ConstDecl = namedtuple("ConstDecl", "line, name, value")
-FuncDecl = namedtuple("FuncDecl", "line, static, name, args")
+FuncDecl = namedtuple("FuncDecl", "line, static, name, args, ret")
+FuncArgDecl = namedtuple("FuncArgDecl", "name, type")
 EnumDecl = namedtuple("EnumDecl", "line, name")
 ClassDecl = namedtuple("ClassDecl", "line, name, extends")
 
@@ -55,13 +56,21 @@ def _get_decl(lnum, flags):
 
     if flags & FUNC_DECLS:
         m = re.match(_FUNC_PATTERN, line)
+        def map_args(a):
+            if ":" in a:
+                argsNType = [x.strip() for x in a.split(",")]
+                return FuncArgDecl(argsNType[0],argsNType[1])
+            else:
+                return FuncArgDecl(a,None);
         if m:
             static = m.group(1) != None
             name = m.group(2)
             args = m.group(3)
+            ret = m.group(4)
             if args:
                 args = [a.strip() for a in args.split(",")]
-            return FuncDecl(lnum, static, name, args)
+                args = list(map(map_args,args))
+            return FuncDecl(lnum, static, name, args, ret)
 
     if flags & ENUM_DECLS:
         m = re.match(_ENUM_PATTERN, line)
@@ -89,7 +98,9 @@ def _args_to_vars(func_decl):
             method_arg = method.args[i]
             if method_arg:
                 arg_type = method_arg.type
-        vars.append(VarDecl(func_decl.line, arg, arg_type))
+        if !arg_type:
+            arg_type=arg.type
+        vars.append(VarDecl(func_decl.line, arg.name, arg_type))
     return vars
 
 # Generator function that scans the current file and yields user declarations.
@@ -341,7 +352,7 @@ def get_token_chain(line, line_num, start_col):
                 return [MethodToken(name, method.returns, method.args, method.qualifiers)]
             decl = find_decl(line_num, name, FUNC_DECLS)
             if decl:
-                return [MethodToken(name, None, decl.args, None)]
+                return [MethodToken(name, decl.ret, decl.args, None)]
     elif not chain or chain[-1].name == "self":
         if not chain and name == "self":
             return [VariableToken(name, None)]
@@ -386,7 +397,7 @@ def get_token_chain(line, line_num, start_col):
                         chain.append(ClassToken(name, decl.line))
                         return chain
                     elif decl_type is FuncDecl and decl.static:
-                        chain.append(MethodToken(name, None, decl.args, None))
+                        chain.append(MethodToken(name, decl.ret, decl.args, None))
                         return chain
                     return
         if not prev_class:
