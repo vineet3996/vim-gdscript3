@@ -211,7 +211,8 @@ def build_completion(item, c_name=None):
                 d["word"] = "{}(".format(item.name)
             else:
                 d["word"] = "{}()".format(item.name)
-            d["abbr"] = "{}({})".format(item.name, ", ".join(item.args))
+            args = list(map(lambda a: "{} {}".format(a.type, a.name), item.args))
+            d["abbr"] = "{}({})".format(item.name, ", ".join(args))
         elif t is script.EnumDecl:
             d["word"] = item.name
             d["kind"] = "enum"

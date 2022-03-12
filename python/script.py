@@ -58,7 +58,7 @@ def _get_decl(lnum, flags):
         m = re.match(_FUNC_PATTERN, line)
         def map_args(a):
             if ":" in a:
-                argsNType = [x.strip() for x in a.split(",")]
+                argsNType = [x.strip() for x in a.split(":")]
                 return FuncArgDecl(argsNType[0],argsNType[1])
             else:
                 return FuncArgDecl(a,None);
